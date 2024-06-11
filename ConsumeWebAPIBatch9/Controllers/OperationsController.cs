@@ -62,5 +62,75 @@ namespace ConsumeWebAPIBatch9.Controllers
             }
         }
 
+
+        [HttpGet]
+        public IActionResult Edit(int id)
+        {
+            //get data by id logic
+
+            MyModel obj = getDatabyID(id);
+            return View(obj);
+        }
+
+        public static MyModel getDatabyID(int id)
+        {
+            MyModel obj = new MyModel();
+            using (HttpClient client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("https://localhost:7299/api/");
+                var data = client.GetAsync("Values/getDatabyID?id=" + id.ToString());
+                data.Wait();
+                var res = data.Result;
+                if (res.IsSuccessStatusCode)
+                {
+                    var resultdata = res.Content.ReadAsAsync<MyModel>();
+                    obj = resultdata.Result;
+                }
+            }
+            return obj;
+        }
+
+
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(MyModel obj)
+        {
+            //Update
+            using (HttpClient client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("https://localhost:7299/api/");
+                var data = client.PutAsJsonAsync<MyModel>("Values/updatedata", obj);
+                data.Wait();
+                var resulteddata = data.Result;
+                if (resulteddata.IsSuccessStatusCode)
+                {
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+
+        }
+
+
+        public async Task<ActionResult<MyModel>> Delete(int id)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("https://localhost:7299/api/");
+                var result = client.DeleteAsync("Values/DeleteData?id=" + id.ToString());
+                result.Wait();
+                var resulteddata = result.Result;
+                if (resulteddata.IsSuccessStatusCode)
+                {
+                    return RedirectToAction("Index");
+                }
+
+            }
+            return View();
+        }
+
     }
 }
